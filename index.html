@@ -1,271 +1,68 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Agencee Booking</title>
-
-  <style>
-    /* Qui lasciamo il tuo stile invariato! Va benissimo. */
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
   <div class="container">
-
     <header>
-      <img src="Agencee_Logo_png.png" alt="Agencee Logo" />
+      <img src="Agencee_Logo_png.png" alt="Agencee Logo" class="logo" />
     </header>
 
     <!-- Pagina 1: Servizio -->
-    <div id="page1">
+    <section id="page1" class="page active">
       <h1>Scegli il Servizio</h1>
-      <label class="label">Servizio</label>
-      <select id="serviceSelect" class="dropdown">
-        <option value="">Caricamento...</option>
-      </select>
+      <select id="serviceSelect" class="dropdown"></select>
       <button class="button" onclick="nextPage(2)">Avanti</button>
-    </div>
+    </section>
 
     <!-- Pagina 2: Calendario + Collaboratore -->
-    <div id="page2" class="hidden">
-      <h1>Scegli giorno e orario</h1>
+    <section id="page2" class="page">
+      <h1>Scegli Giorno e Orario</h1>
       <div class="calendar-nav">
-        <button onclick="prevWeek()">←</button>
+        <button onclick="prevWeek()">❮</button>
         <h3 id="monthLabel">Mese</h3>
-        <button onclick="nextWeek()">→</button>
+        <button onclick="nextWeek()">❯</button>
       </div>
       <div class="calendar-days" id="calendarDays"></div>
       <div class="slots-list" id="slotsList"></div>
-      <label class="label">Collaboratori disponibili</label>
-      <select id="collaboratorSelect" class="dropdown">
-        <option value="">Seleziona un orario prima</option>
-      </select>
-      <button class="button" onclick="nextPage(3)">Avanti</button>
-    </div>
 
-    <!-- Pagina 3: Form Prenotazione -->
-    <div id="page3" class="hidden">
+      <label for="collaboratorSelect">Collaboratore</label>
+      <select id="collaboratorSelect" class="dropdown">
+        <option value="">Seleziona orario prima</option>
+      </select>
+
+      <button class="button" onclick="nextPage(3)">Avanti</button>
+    </section>
+
+    <!-- Pagina 3: Dati Utente -->
+    <section id="page3" class="page">
       <h1>I tuoi dati</h1>
-      <label class="label">Nome e Cognome</label>
-      <input type="text" id="nameInput" class="form-input" placeholder="Mario Rossi">
-      <label class="label">Email</label>
-      <input type="email" id="emailInput" class="form-input" placeholder="mario@email.com">
-      <label class="label">Motivo</label>
-      <input type="text" id="reasonInput" class="form-input" placeholder="Motivo...">
+      <input type="text" id="nameInput" placeholder="Nome e Cognome" />
+      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="text" id="reasonInput" placeholder="Motivo" />
+
       <div class="summary">
-        <h3>Riepilogo</h3>
-        <p><strong>Servizio:</strong> <span id="summaryService">-</span></p>
-        <p><strong>Data:</strong> <span id="summaryDate">-</span></p>
-        <p><strong>Orario:</strong> <span id="summaryTime">-</span></p>
-        <p><strong>Collaboratore:</strong> <span id="summaryCollaborator">-</span></p>
+        <p><strong>Servizio:</strong> <span id="summaryService"></span></p>
+        <p><strong>Data:</strong> <span id="summaryDate"></span></p>
+        <p><strong>Orario:</strong> <span id="summaryTime"></span></p>
+        <p><strong>Collaboratore:</strong> <span id="summaryCollaborator"></span></p>
       </div>
+
       <button class="button" onclick="sendBooking()">Conferma Prenotazione</button>
-    </div>
+    </section>
 
     <!-- Pagina 4: Conferma -->
-    <div id="page4" class="hidden">
-      <div class="confirm-message">
-        <h2>✅ Prenotazione Confermata!</h2>
-        <p>Riceverai una mail con i dettagli.</p>
-      </div>
-    </div>
-
+    <section id="page4" class="page">
+      <h2>✅ Prenotazione Confermata!</h2>
+      <p>Riceverai una mail con i dettagli.</p>
+    </section>
   </div>
 
-  <script>
-    const backendUrl = 'https://admin-back-g4cn.onrender.com';
-    let selectedDate = '';
-    let selectedTime = '';
-    let currentWeekOffset = 0;
-
-    async function loadServices() {
-      const select = document.getElementById('serviceSelect');
-      try {
-        const res = await fetch(`${backendUrl}/events`);
-        const services = await res.json();
-
-        select.innerHTML = '<option value="">Seleziona...</option>';
-        services.forEach(event => {
-          const option = document.createElement('option');
-          option.value = event.name;
-          option.textContent = `${event.name} (${event.type === 'call' ? 'Call' : 'In sede'})`;
-          select.appendChild(option);
-        });
-      } catch (error) {
-        console.error('Errore caricamento servizi:', error);
-        select.innerHTML = '<option value="">Errore caricamento</option>';
-      }
-    }
-
-    function nextPage(pageNumber) {
-      if (pageNumber === 2 && !document.getElementById('serviceSelect').value) {
-        alert('Seleziona un servizio');
-        return;
-      }
-
-      if (pageNumber === 3) {
-        const collaborator = document.getElementById('collaboratorSelect').value;
-        if (!selectedDate || !selectedTime || !collaborator) {
-          alert('Seleziona giorno, orario e collaboratore');
-          return;
-        }
-
-        document.getElementById('summaryService').innerText = document.getElementById('serviceSelect').value;
-        document.getElementById('summaryDate').innerText = selectedDate;
-        document.getElementById('summaryTime').innerText = selectedTime;
-        document.getElementById('summaryCollaborator').innerText = collaborator;
-      }
-
-      for (let i = 1; i <= 4; i++) {
-        document.getElementById(`page${i}`).classList.add('hidden');
-      }
-      document.getElementById(`page${pageNumber}`).classList.remove('hidden');
-    }
-
-    function generateDays() {
-      const daysContainer = document.getElementById('calendarDays');
-      daysContainer.innerHTML = '';
-      const today = new Date();
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() + (currentWeekOffset * 7));
-
-      const daysOfWeek = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'];
-
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-
-        const dayName = daysOfWeek[i];
-        const dayNum = date.getDate();
-        const monthName = date.toLocaleDateString('it-IT', { month: 'long' });
-
-        document.getElementById('monthLabel').innerText = monthName;
-
-        const div = document.createElement('div');
-        div.className = 'day';
-        div.innerHTML = `<span>${dayName}</span><div class="date">${dayNum}</div>`;
-
-        div.addEventListener('click', () => {
-          selectedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
-          div.classList.add('selected');
-          generateSlots();
-        });
-
-        daysContainer.appendChild(div);
-      }
-    }
-
-    function generateSlots() {
-      const slotsList = document.getElementById('slotsList');
-      slotsList.innerHTML = '';
-
-      const slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '14:00', '14:30', '15:00'];
-
-      slots.forEach(slot => {
-        const div = document.createElement('div');
-        div.className = 'slot-item';
-        div.innerHTML = `<span>${slot}</span><span>€ 0</span>`;
-
-        div.addEventListener('click', async () => {
-          selectedTime = slot;
-          document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
-          div.classList.add('selected');
-
-          await updateAvailableCollaborators();
-        });
-
-        slotsList.appendChild(div);
-      });
-    }
-
-    async function updateAvailableCollaborators() {
-      const collaboratorSelect = document.getElementById('collaboratorSelect');
-      collaboratorSelect.innerHTML = '<option value="">Caricamento...</option>';
-
-      if (!selectedDate || !selectedTime) return;
-
-      try {
-        const response = await fetch(`${backendUrl}/availability?date=${selectedDate}&time=${selectedTime}`);
-        const data = await response.json();
-
-        collaboratorSelect.innerHTML = '';
-
-        if (data.availableCollaborators.length === 0) {
-          collaboratorSelect.innerHTML = '<option value="">Nessun collaboratore disponibile</option>';
-        } else {
-          collaboratorSelect.innerHTML = '<option value="">Seleziona...</option>';
-          data.availableCollaborators.forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            option.text = name;
-            collaboratorSelect.appendChild(option);
-          });
-        }
-      } catch (error) {
-        console.error('Errore nel recupero disponibilità:', error);
-        collaboratorSelect.innerHTML = '<option value="">Errore di connessione</option>';
-      }
-    }
-
-    async function sendBooking() {
-      const name = document.getElementById('nameInput').value;
-      const email = document.getElementById('emailInput').value;
-      const reason = document.getElementById('reasonInput').value;
-
-      if (!name || !email || !reason) {
-        alert('Completa i tuoi dati!');
-        return;
-      }
-
-      const booking = {
-        servizio: document.getElementById('serviceSelect').value,
-        giorno: selectedDate,
-        ora: selectedTime,
-        collaboratore: document.getElementById('collaboratorSelect').value,
-        nome: name,
-        email: email,
-        motivo: reason
-      };
-
-      try {
-        const res = await fetch(`${backendUrl}/bookings`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(booking)
-        });
-
-        if (res.ok) {
-          nextPage(4);
-        } else {
-          alert('Errore nell’invio della prenotazione.');
-        }
-
-      } catch (error) {
-        console.error('Errore invio booking:', error);
-        alert('Errore di connessione');
-      }
-    }
-
-    function nextWeek() {
-      currentWeekOffset++;
-      generateDays();
-    }
-
-    function prevWeek() {
-      currentWeekOffset--;
-      generateDays();
-    }
-
-    // Init
-    loadServices();
-    generateDays();
-
-  </script>
-
+<script src="script.js"></script>
 </body>
-
 </html>

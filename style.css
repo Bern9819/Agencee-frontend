@@ -1,0 +1,106 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0; padding: 0;
+    background: #f0f4f8;
+  }
+  
+  .container {
+    max-width: 400px;
+    margin: auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  
+  .logo {
+    width: 180px;
+    display: block;
+    margin: 20px auto;
+  }
+  
+  h1, h2 {
+    text-align: center;
+    color: #3B6C8F;
+  }
+  
+  .page {
+    display: none;
+    flex-direction: column;
+  }
+  
+  .page.active {
+    display: flex;
+  }
+  
+  .dropdown, input {
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 100%;
+  }
+  
+  .button {
+    background: #7759B3;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .button:hover {
+    background: #6A93C5;
+  }
+  
+  .calendar-days {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+  }
+  
+  .day {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .day.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .day.selected {
+    background: #7759B3;
+    color: #fff;
+    border-radius: 50%;
+  }
+  
+  .slots-list {
+    margin-top: 10px;
+  }
+  
+  .slot-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    cursor: pointer;
+  }
+  
+  .slot-item.disabled {
+    background: #eee;
+    color: #aaa;
+    cursor: not-allowed;
+  }
+  
+  .slot-item.selected {
+    background: #8BC6B2;
+    color: #fff;
+  }
+  
