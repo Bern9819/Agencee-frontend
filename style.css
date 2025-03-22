@@ -1,135 +1,19 @@
-body {
-  margin: 0;
-  font-family: 'Arial', sans-serif;
-  background-color: #f9fafc;
-}
-
-.wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.booking-card {
-  background: #fff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  width: 400px;
-  max-width: 90%;
-  transition: all 0.3s ease-in-out;
-}
-
-.logo {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.logo img {
-  width: 150px;
-}
-
-h2 {
-  color: #3B6C8F;
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-
-.input-field {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-textarea {
-  resize: none;
-  height: 80px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 12px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.primary {
-  background-color: #7759B3;
-  color: #fff;
-}
-
-.primary:hover {
-  background-color: #6A4CA3;
-}
-
-.secondary {
-  background-color: #ddd;
-  color: #333;
-}
-
-.secondary:hover {
-  background-color: #ccc;
-}
-
-.step {
-  display: none;
-}
-
-.step.active {
-  display: block;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.calendar-day {
-  padding: 10px;
-  border-radius: 8px;
-  background-color: #f1f1f1;
-  text-align: center;
-  cursor: pointer;
-}
-
-.calendar-day.available {
-  background-color: #a8dadc;
-}
-
-.calendar-day.selected {
-  background-color: #457b9d;
-  color: #fff;
-}
-
-.time-slots {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.time-slot {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  text-align: center;
-  cursor: pointer;
-}
-
-.time-slot.selected {
-  background-color: #457b9d;
-  color: #fff;
-}
-
-.actions {
+.calendar-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.btn-icon {
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.calendar-day.disabled {
+  background-color: #eee;
+  color: #999;
+  pointer-events: none;
 }
