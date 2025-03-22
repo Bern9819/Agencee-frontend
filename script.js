@@ -1,4 +1,4 @@
-const backendUrl = 'https://admin-back-g4cn.onrender.com'; // o il tuo backend
+const backendUrl = 'https://admin-back-g4cn.onrender.com';
 
 let selectedService = '';
 let selectedDate = '';
@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function goToStep(step) {
-  document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
-  document.getElementById(`step${step}`).classList.remove('hidden');
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  document.getElementById(`step${step}`).classList.add('active');
 
   if (step === 2) generateCalendar();
 }
@@ -19,7 +19,6 @@ function restart() {
   selectedService = '';
   selectedDate = '';
   selectedTime = '';
-  document.getElementById('serviceSelect').selectedIndex = 0;
   goToStep(1);
 }
 
@@ -58,7 +57,7 @@ function generateCalendar() {
     const dateStr = date.toISOString().split('T')[0];
 
     const dayDiv = document.createElement('div');
-    dayDiv.className = 'calendar-day';
+    dayDiv.className = 'calendar-day available';
     dayDiv.innerHTML = `<strong>${date.getDate()}</strong><br>${date.toLocaleDateString('it-IT', { weekday: 'short' })}`;
     dayDiv.addEventListener('click', () => {
       selectedDate = dateStr;
@@ -66,9 +65,6 @@ function generateCalendar() {
       dayDiv.classList.add('selected');
       loadTimeSlots();
     });
-
-    // Disponibilità fittizia
-    dayDiv.classList.add(i % 2 === 0 ? 'available' : '');
 
     container.appendChild(dayDiv);
   }
