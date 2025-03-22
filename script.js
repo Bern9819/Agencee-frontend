@@ -54,36 +54,52 @@ function generateCalendar() {
   }
 }
 
-async function loadTimeSlots() {
-  const container = document.getElementById('timeSlotsContainer');
-  const collaboratorSelect = document.getElementById('collaboratorSelect');
-
-  container.innerHTML = 'Caricamento...';
-  collaboratorSelect.innerHTML = '<option>Caricamento...</option>';
+async function generateSlots() {
+  const slotsList = document.getElementById('slots');
+  slotsList.innerHTML = '<p>Caricamento orari disponibili...</p>';
 
   try {
-    const response = await fetch(`${backendUrl}/availability?date=${selectedDate}`);
-    const data = await response.json();
+    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}`);
+    const data = await res.json();
 
-    // Time slots
-    container.innerHTML = '';
-    const slots = ['09:00', '09:30', '10:00', '10:30', '11:00']; // Example slots
-    slots.forEach(slot => {
+    slotsList.innerHTML = '';
+
+    if (!data.availableCollaborators.length) {
+      slotsList.innerHTML = '<p>Nessun collaboratore disponibile in questa data</p>';
+      return;
+    }
+
+    data.slots.forEach(slot => {
       const div = document.createElement('div');
-      div.className = 'time-slot';
-      div.innerText = slot;
+      div.className = 'slot';
+      div.textContent = slot;
+
       div.addEventListener('click', () => {
-        selectedTime = slot;
-        document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
+        selectedSlot = slot;
+        document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
         div.classList.add('selected');
-        updateCollaborators(data.availableCollaborators);
+
+        loadCollaborators(data.availableCollaborators);
       });
-      container.appendChild(div);
+
+      slotsList.appendChild(div);
     });
   } catch (error) {
-    console.error('Errore caricamento slot:', error);
-    container.innerHTML = '<p>Errore caricamento orari</p>';
+    console.error('Errore caricamento disponibilità:', error);
+    slotsList.innerHTML = '<p>Errore caricamento orari</p>';
   }
+}
+
+function loadCollaborators(availableNames) {
+  const collaboratorSelect = document.getElementById('collaboratorSelect');
+  collaboratorSelect.innerHTML = '<option value="">Seleziona collaboratore...</option>';
+
+  availableNames.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    collaboratorSelect.appendChild(option);
+  });
 }
 
 function updateCollaborators(collaborators = []) {
