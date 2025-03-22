@@ -1,59 +1,29 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agencee - Prenota</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
+<!-- Step 2 -->
+<div class="step" id="step2">
+  <h2>Scegli Data e Ora</h2>
 
-<body>
-  <div class="wrapper">
-    <div class="booking-card">
-      <!-- Header Logo -->
-      <div class="logo">
-        <img src="https://via.placeholder.com/150x50?text=Agencee+Logo" alt="Logo Agencee" />
-      </div>
-
-      <!-- Step 1 -->
-      <div class="step active" id="step1">
-        <h2>Scegli il Servizio</h2>
-        <select id="serviceSelect" class="input-field"></select>
-        <button class="btn primary" onclick="goToStep(2)">Avanti</button>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="step" id="step2">
-        <h2>Scegli Data e Ora</h2>
-        <div class="calendar-days" id="calendarContainer"></div>
-        <div class="time-slots" id="timeSlotsContainer"></div>
-        <div class="actions">
-          <button class="btn secondary" onclick="goToStep(1)">Indietro</button>
-          <button class="btn primary" onclick="goToStep(3)">Avanti</button>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="step" id="step3">
-        <h2>I tuoi dati</h2>
-        <input type="text" id="nameInput" placeholder="Nome e Cognome" class="input-field" />
-        <input type="email" id="emailInput" placeholder="Email" class="input-field" />
-        <textarea id="notesInput" placeholder="Note..." class="input-field"></textarea>
-        <div class="actions">
-          <button class="btn secondary" onclick="goToStep(2)">Indietro</button>
-          <button class="btn primary" onclick="confirmBooking()">Prenota</button>
-        </div>
-      </div>
-
-      <!-- Step 4 -->
-      <div class="step" id="step4">
-        <h2>✅ Prenotazione Confermata!</h2>
-        <p>Ti abbiamo inviato un'email con tutti i dettagli!</p>
-        <button class="btn primary" onclick="restart()">Prenota un altro</button>
-      </div>
-    </div>
+  <!-- Calendar Month Navigation -->
+  <div class="calendar-header">
+    <button class="btn-icon" onclick="prevMonth()">←</button>
+    <h3 id="monthYearLabel">Marzo 2025</h3>
+    <button class="btn-icon" onclick="nextMonth()">→</button>
   </div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+  <!-- Calendar Days -->
+  <div class="calendar-days" id="calendarContainer"></div>
+
+  <!-- Time Slots -->
+  <h3 style="margin-top:20px;">Orario Disponibile</h3>
+  <div class="time-slots" id="timeSlotsContainer"></div>
+
+  <!-- Collaborators -->
+  <h3 style="margin-top:20px;">Collaboratori Disponibili</h3>
+  <select id="collaboratorSelect" class="input-field">
+    <option value="">Seleziona collaboratore...</option>
+  </select>
+
+  <div class="actions">
+    <button class="btn secondary" onclick="goToStep(1)">Indietro</button>
+    <button class="btn primary" onclick="goToStep(3)">Avanti</button>
+  </div>
+</div>
