@@ -3,48 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agencee - Prenota un Appuntamento</title>
+  <title>Agencee - Prenota</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <div class="booking-container">
+  <div class="wrapper">
+    <div class="booking-card">
+      <!-- Header Logo -->
+      <div class="logo">
+        <img src="https://via.placeholder.com/150x50?text=Agencee+Logo" alt="Logo Agencee" />
+      </div>
 
-    <!-- Step 1: Seleziona Servizio -->
-    <div class="step" id="step1">
-      <h1>Prenota un Appuntamento</h1>
-      <h2>1. Scegli il Servizio</h2>
-      <select id="serviceSelect" class="dropdown"></select>
-      <button class="btn" onclick="goToStep(2)">Avanti</button>
+      <!-- Step 1 -->
+      <div class="step active" id="step1">
+        <h2>Scegli il Servizio</h2>
+        <select id="serviceSelect" class="input-field"></select>
+        <button class="btn primary" onclick="goToStep(2)">Avanti</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step" id="step2">
+        <h2>Scegli Data e Ora</h2>
+        <div class="calendar-days" id="calendarContainer"></div>
+        <div class="time-slots" id="timeSlotsContainer"></div>
+        <div class="actions">
+          <button class="btn secondary" onclick="goToStep(1)">Indietro</button>
+          <button class="btn primary" onclick="goToStep(3)">Avanti</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step" id="step3">
+        <h2>I tuoi dati</h2>
+        <input type="text" id="nameInput" placeholder="Nome e Cognome" class="input-field" />
+        <input type="email" id="emailInput" placeholder="Email" class="input-field" />
+        <textarea id="notesInput" placeholder="Note..." class="input-field"></textarea>
+        <div class="actions">
+          <button class="btn secondary" onclick="goToStep(2)">Indietro</button>
+          <button class="btn primary" onclick="confirmBooking()">Prenota</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step" id="step4">
+        <h2>✅ Prenotazione Confermata!</h2>
+        <p>Ti abbiamo inviato un'email con tutti i dettagli!</p>
+        <button class="btn primary" onclick="restart()">Prenota un altro</button>
+      </div>
     </div>
-
-    <!-- Step 2: Seleziona Data e Ora -->
-    <div class="step hidden" id="step2">
-      <h2>2. Scegli Data e Ora</h2>
-      <div id="calendarContainer"></div>
-      <div id="timeSlotsContainer"></div>
-      <button class="btn" onclick="goToStep(1)">Indietro</button>
-      <button class="btn" onclick="goToStep(3)">Avanti</button>
-    </div>
-
-    <!-- Step 3: Inserisci Dati -->
-    <div class="step hidden" id="step3">
-      <h2>3. I tuoi dati</h2>
-      <input type="text" id="nameInput" placeholder="Nome e Cognome" />
-      <input type="email" id="emailInput" placeholder="Email" />
-      <textarea id="notesInput" placeholder="Note per l'appuntamento (opzionale)"></textarea>
-
-      <button class="btn" onclick="goToStep(2)">Indietro</button>
-      <button class="btn" onclick="confirmBooking()">Prenota</button>
-    </div>
-
-    <!-- Step 4: Conferma -->
-    <div class="step hidden" id="step4">
-      <h2>✅ Prenotazione Confermata!</h2>
-      <p>Riceverai una mail con i dettagli.</p>
-      <button class="btn" onclick="restart()">Prenota un altro</button>
-    </div>
-
   </div>
 
   <script src="script.js"></script>
