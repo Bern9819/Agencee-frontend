@@ -1,12 +1,7 @@
-const backendUrl = 'https://admin-back-g4cn.onrender.com';
-
 let selectedService = '';
 let selectedDate = '';
 let selectedTime = '';
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadServices();
-});
+let currentMonthOffset = 0;
 
 function goToStep(step) {
   document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
@@ -15,123 +10,95 @@ function goToStep(step) {
   if (step === 2) generateCalendar();
 }
 
-function restart() {
-  selectedService = '';
-  selectedDate = '';
-  selectedTime = '';
-  goToStep(1);
+function prevMonth() {
+  currentMonthOffset--;
+  generateCalendar();
 }
 
-async function loadServices() {
-  const select = document.getElementById('serviceSelect');
-  select.innerHTML = '<option>Caricamento...</option>';
-
-  try {
-    const res = await fetch(`${backendUrl}/events`);
-    const services = await res.json();
-
-    select.innerHTML = '<option value="">Seleziona servizio...</option>';
-    services.forEach(event => {
-      const option = document.createElement('option');
-      option.value = event.name;
-      option.textContent = `${event.name} (${event.type === 'call' ? 'Call' : 'In sede'})`;
-      select.appendChild(option);
-    });
-
-    select.addEventListener('change', e => {
-      selectedService = e.target.value;
-    });
-  } catch (err) {
-    select.innerHTML = '<option value="">Errore caricamento</option>';
-  }
+function nextMonth() {
+  currentMonthOffset++;
+  generateCalendar();
 }
 
 function generateCalendar() {
   const container = document.getElementById('calendarContainer');
+  const label = document.getElementById('monthYearLabel');
   container.innerHTML = '';
 
   const today = new Date();
-  for (let i = 0; i < 14; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+  const currentDate = new Date(today.getFullYear(), today.getMonth() + currentMonthOffset, 1);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  label.innerText = `${currentDate.toLocaleString('it-IT', { month: 'long' })} ${year}`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
     const dateStr = date.toISOString().split('T')[0];
 
-    const dayDiv = document.createElement('div');
-    dayDiv.className = 'calendar-day available';
-    dayDiv.innerHTML = `<strong>${date.getDate()}</strong><br>${date.toLocaleDateString('it-IT', { weekday: 'short' })}`;
-    dayDiv.addEventListener('click', () => {
+    const div = document.createElement('div');
+    div.className = 'calendar-day available';
+    div.innerHTML = `<strong>${day}</strong><br>${date.toLocaleDateString('it-IT', { weekday: 'short' })}`;
+
+    div.addEventListener('click', () => {
       selectedDate = dateStr;
       document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-      dayDiv.classList.add('selected');
+      div.classList.add('selected');
       loadTimeSlots();
     });
 
-    container.appendChild(dayDiv);
+    container.appendChild(div);
   }
 }
 
 async function loadTimeSlots() {
   const container = document.getElementById('timeSlotsContainer');
-  container.innerHTML = '<p>Caricamento orari...</p>';
+  const collaboratorSelect = document.getElementById('collaboratorSelect');
+
+  container.innerHTML = 'Caricamento...';
+  collaboratorSelect.innerHTML = '<option>Caricamento...</option>';
 
   try {
-    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}&time=09:00`);
-    const data = await res.json();
+    const response = await fetch(`${backendUrl}/availability?date=${selectedDate}`);
+    const data = await response.json();
 
+    // Time slots
     container.innerHTML = '';
-    const slots = ['09:00', '09:30', '10:00', '10:30', '11:00'];
-
+    const slots = ['09:00', '09:30', '10:00', '10:30', '11:00']; // Example slots
     slots.forEach(slot => {
       const div = document.createElement('div');
       div.className = 'time-slot';
-      div.textContent = slot;
-
+      div.innerText = slot;
       div.addEventListener('click', () => {
         selectedTime = slot;
         document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
         div.classList.add('selected');
+        updateCollaborators(data.availableCollaborators);
       });
-
       container.appendChild(div);
     });
-  } catch (err) {
-    container.innerHTML = '<p>Errore caricamento orari.</p>';
+  } catch (error) {
+    console.error('Errore caricamento slot:', error);
+    container.innerHTML = '<p>Errore caricamento orari</p>';
   }
 }
 
-async function confirmBooking() {
-  const name = document.getElementById('nameInput').value;
-  const email = document.getElementById('emailInput').value;
-  const notes = document.getElementById('notesInput').value;
+function updateCollaborators(collaborators = []) {
+  const collaboratorSelect = document.getElementById('collaboratorSelect');
+  collaboratorSelect.innerHTML = '';
 
-  if (!name || !email || !selectedDate || !selectedTime) {
-    alert('Completa tutti i campi!');
-    return;
-  }
-
-  const booking = {
-    servizio: selectedService,
-    giorno: selectedDate,
-    ora: selectedTime,
-    nome: name,
-    email: email,
-    motivo: notes
-  };
-
-  try {
-    const res = await fetch(`${backendUrl}/bookings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(booking)
+  if (collaborators.length === 0) {
+    collaboratorSelect.innerHTML = '<option value="">Nessun collaboratore disponibile</option>';
+  } else {
+    collaboratorSelect.innerHTML = '<option value="">Seleziona collaboratore...</option>';
+    collaborators.forEach(c => {
+      const option = document.createElement('option');
+      option.value = c.name;
+      option.text = c.name;
+      collaboratorSelect.appendChild(option);
     });
-
-    if (res.ok) {
-      goToStep(4);
-    } else {
-      alert('Errore prenotazione');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Errore connessione');
   }
 }
