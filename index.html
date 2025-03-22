@@ -3,66 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agencee Booking</title>
+  <title>Agencee - Prenota un Appuntamento</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <div class="booking-container">
 
-  <div class="container">
-    <header>
-      <img src="Agencee_Logo_png.png" alt="Agencee Logo" class="logo" />
-    </header>
-
-    <!-- Pagina 1: Servizio -->
-    <section id="page1" class="page active">
-      <h1>Scegli il Servizio</h1>
+    <!-- Step 1: Seleziona Servizio -->
+    <div class="step" id="step1">
+      <h1>Prenota un Appuntamento</h1>
+      <h2>1. Scegli il Servizio</h2>
       <select id="serviceSelect" class="dropdown"></select>
-      <button class="button" onclick="nextPage(2)">Avanti</button>
-    </section>
+      <button class="btn" onclick="goToStep(2)">Avanti</button>
+    </div>
 
-    <!-- Pagina 2: Calendario + Collaboratore -->
-    <section id="page2" class="page">
-      <h1>Scegli Giorno e Orario</h1>
-      <div class="calendar-nav">
-        <button onclick="prevWeek()">❮</button>
-        <h3 id="monthLabel">Mese</h3>
-        <button onclick="nextWeek()">❯</button>
-      </div>
-      <div class="calendar-days" id="calendarDays"></div>
-      <div class="slots-list" id="slotsList"></div>
+    <!-- Step 2: Seleziona Data e Ora -->
+    <div class="step hidden" id="step2">
+      <h2>2. Scegli Data e Ora</h2>
+      <div id="calendarContainer"></div>
+      <div id="timeSlotsContainer"></div>
+      <button class="btn" onclick="goToStep(1)">Indietro</button>
+      <button class="btn" onclick="goToStep(3)">Avanti</button>
+    </div>
 
-      <label for="collaboratorSelect">Collaboratore</label>
-      <select id="collaboratorSelect" class="dropdown">
-        <option value="">Seleziona orario prima</option>
-      </select>
-
-      <button class="button" onclick="nextPage(3)">Avanti</button>
-    </section>
-
-    <!-- Pagina 3: Dati Utente -->
-    <section id="page3" class="page">
-      <h1>I tuoi dati</h1>
+    <!-- Step 3: Inserisci Dati -->
+    <div class="step hidden" id="step3">
+      <h2>3. I tuoi dati</h2>
       <input type="text" id="nameInput" placeholder="Nome e Cognome" />
       <input type="email" id="emailInput" placeholder="Email" />
-      <input type="text" id="reasonInput" placeholder="Motivo" />
+      <textarea id="notesInput" placeholder="Note per l'appuntamento (opzionale)"></textarea>
 
-      <div class="summary">
-        <p><strong>Servizio:</strong> <span id="summaryService"></span></p>
-        <p><strong>Data:</strong> <span id="summaryDate"></span></p>
-        <p><strong>Orario:</strong> <span id="summaryTime"></span></p>
-        <p><strong>Collaboratore:</strong> <span id="summaryCollaborator"></span></p>
-      </div>
+      <button class="btn" onclick="goToStep(2)">Indietro</button>
+      <button class="btn" onclick="confirmBooking()">Prenota</button>
+    </div>
 
-      <button class="button" onclick="sendBooking()">Conferma Prenotazione</button>
-    </section>
-
-    <!-- Pagina 4: Conferma -->
-    <section id="page4" class="page">
+    <!-- Step 4: Conferma -->
+    <div class="step hidden" id="step4">
       <h2>✅ Prenotazione Confermata!</h2>
       <p>Riceverai una mail con i dettagli.</p>
-    </section>
+      <button class="btn" onclick="restart()">Prenota un altro</button>
+    </div>
+
   </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
