@@ -1,29 +1,312 @@
-<!-- Step 2 -->
-<div class="step" id="step2">
-  <h2>Scegli Data e Ora</h2>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prenota con Agencee</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
 
-  <!-- Calendar Month Navigation -->
-  <div class="calendar-header">
-    <button class="btn-icon" onclick="prevMonth()">←</button>
-    <h3 id="monthYearLabel">Marzo 2025</h3>
-    <button class="btn-icon" onclick="nextMonth()">→</button>
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1F2937;
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .calendar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .day {
+      background-color: #EFF6FF;
+      border: 1px solid #3B82F6;
+      border-radius: 6px;
+      padding: 10px;
+      width: 60px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .day.unavailable {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .day.selected {
+      background-color: #3B82F6;
+      color: white;
+    }
+
+    .slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .slot {
+      background-color: #F3F4F6;
+      border: 1px solid #D1D5DB;
+      border-radius: 4px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .slot.selected {
+      background-color: #3B82F6;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #3B82F6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #2563EB;
+    }
+
+    .success {
+      background-color: #D1FAE5;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      color: #065F46;
+      margin-top: 20px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Prenota un Appuntamento</h1>
+
+    <!-- Servizio -->
+    <div class="section">
+      <label for="service">Scegli il Servizio</label>
+      <select id="service">
+        <option value="">Seleziona servizio...</option>
+        <option value="call">Call (Google Meet)</option>
+        <option value="onsite">Appuntamento in sede</option>
+      </select>
+    </div>
+
+    <!-- Data -->
+    <div class="section">
+      <label>Seleziona la Data</label>
+      <div class="calendar" id="calendar"></div>
+    </div>
+
+    <!-- Orario -->
+    <div class="section">
+      <label>Orari Disponibili</label>
+      <div class="slots" id="slots"></div>
+    </div>
+
+    <!-- Collaboratori -->
+    <div class="section">
+      <label for="collaborator">Collaboratore Disponibile</label>
+      <select id="collaborator">
+        <option value="">Seleziona collaboratore...</option>
+      </select>
+    </div>
+
+    <!-- Dati Utente -->
+    <div class="section">
+      <label for="name">Nome e Cognome</label>
+      <input type="text" id="name" placeholder="Mario Rossi" />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="mario@esempio.com" />
+
+      <label for="reason">Motivo dell'appuntamento</label>
+      <input type="text" id="reason" placeholder="Es: Consulenza..." />
+    </div>
+
+    <button onclick="sendBooking()">Conferma Prenotazione</button>
+
+    <div class="success" id="success" style="display: none;">
+      ✅ Prenotazione effettuata con successo!
+    </div>
+
   </div>
 
-  <!-- Calendar Days -->
-  <div class="calendar-days" id="calendarContainer"></div>
+  <script>
+    const calendarContainer = document.getElementById('calendar');
+    const slotsContainer = document.getElementById('slots');
+    const collaboratorSelect = document.getElementById('collaborator');
+    const backendUrl = 'https://admin-back-g4cn.onrender.com'; // Il tuo backend
 
-  <!-- Time Slots -->
-  <h3 style="margin-top:20px;">Orario Disponibile</h3>
-  <div class="time-slots" id="timeSlotsContainer"></div>
+    let selectedDate = '';
+    let selectedSlot = '';
 
-  <!-- Collaborators -->
-  <h3 style="margin-top:20px;">Collaboratori Disponibili</h3>
-  <select id="collaboratorSelect" class="input-field">
-    <option value="">Seleziona collaboratore...</option>
-  </select>
+    // --- GENERA CALENDARIO (simulato) ---
+    function generateCalendar() {
+      const days = [];
+      const today = new Date();
 
-  <div class="actions">
-    <button class="btn secondary" onclick="goToStep(1)">Indietro</button>
-    <button class="btn primary" onclick="goToStep(3)">Avanti</button>
-  </div>
-</div>
+      for (let i = 0; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dayStr = `${date.getDate()}/${date.getMonth() + 1}`;
+        const disabled = i % 4 === 0; // Simula giorni non disponibili
+
+        days.push({ date: date.toISOString().split('T')[0], label: dayStr, disabled });
+      }
+
+      calendarContainer.innerHTML = '';
+      days.forEach(day => {
+        const div = document.createElement('div');
+        div.className = `day ${day.disabled ? 'unavailable' : ''}`;
+        div.textContent = day.label;
+
+        if (!day.disabled) {
+          div.addEventListener('click', () => {
+            selectedDate = day.date;
+            document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+            div.classList.add('selected');
+            generateSlots();
+          });
+        }
+
+        calendarContainer.appendChild(div);
+      });
+    }
+
+    // --- GENERA ORARI (simulati) ---
+    function generateSlots() {
+      const slots = ['09:00', '10:00', '11:00', '14:00', '15:00'];
+      slotsContainer.innerHTML = '';
+
+      slots.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'slot';
+        div.textContent = slot;
+
+        div.addEventListener('click', () => {
+          selectedSlot = slot;
+          document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
+          div.classList.add('selected');
+          loadCollaborators();
+        });
+
+        slotsContainer.appendChild(div);
+      });
+    }
+
+    // --- CARICA COLLABORATORI DISPONIBILI ---
+    async function loadCollaborators() {
+      collaboratorSelect.innerHTML = '<option value="">Caricamento...</option>';
+
+      try {
+        const res = await fetch(`${backendUrl}/collaborators`);
+        const collaborators = await res.json();
+
+        collaboratorSelect.innerHTML = '<option value="">Seleziona collaboratore...</option>';
+        collaborators.forEach(c => {
+          const option = document.createElement('option');
+          option.value = c.name;
+          option.textContent = c.name;
+          collaboratorSelect.appendChild(option);
+        });
+      } catch (err) {
+        console.error(err);
+        collaboratorSelect.innerHTML = '<option value="">Errore caricamento</option>';
+      }
+    }
+
+    // --- INVIA PRENOTAZIONE ---
+    async function sendBooking() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const reason = document.getElementById('reason').value;
+      const service = document.getElementById('service').value;
+      const collaborator = document.getElementById('collaborator').value;
+
+      if (!service || !selectedDate || !selectedSlot || !collaborator || !name || !email) {
+        alert('Compila tutti i campi!');
+        return;
+      }
+
+      const booking = {
+        servizio: service,
+        giorno: selectedDate,
+        ora: selectedSlot,
+        collaboratore: collaborator,
+        nome: name,
+        email: email,
+        motivo: reason
+      };
+
+      try {
+        const res = await fetch(`${backendUrl}/bookings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(booking)
+        });
+
+        if (res.ok) {
+          document.getElementById('success').style.display = 'block';
+        } else {
+          alert('Errore nella prenotazione');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Errore di connessione');
+      }
+    }
+
+    // Avvio
+    generateCalendar();
+  </script>
+
+</body>
+</html>
