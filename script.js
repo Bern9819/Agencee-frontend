@@ -1,161 +1,125 @@
-const backendUrl = 'https://admin-back-g4cn.onrender.com';
+const backendUrl = 'https://admin-back-g4cn.onrender.com'; // o il tuo backend
 
+let selectedService = '';
 let selectedDate = '';
 let selectedTime = '';
-let currentWeekOffset = 0;
 
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page${page}`).classList.add('active');
+document.addEventListener('DOMContentLoaded', () => {
+  loadServices();
+});
+
+function goToStep(step) {
+  document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
+  document.getElementById(`step${step}`).classList.remove('hidden');
+
+  if (step === 2) generateCalendar();
 }
 
-function nextPage(pageNumber) {
-  if (pageNumber === 2 && !document.getElementById('serviceSelect').value) {
-    alert('Seleziona un servizio');
-    return;
-  }
-
-  if (pageNumber === 3) {
-    const collaborator = document.getElementById('collaboratorSelect').value;
-    if (!selectedDate || !selectedTime || !collaborator) {
-      alert('Completa la scelta di data/orario e collaboratore');
-      return;
-    }
-
-    document.getElementById('summaryService').textContent = document.getElementById('serviceSelect').value;
-    document.getElementById('summaryDate').textContent = selectedDate;
-    document.getElementById('summaryTime').textContent = selectedTime;
-    document.getElementById('summaryCollaborator').textContent = collaborator;
-  }
-
-  showPage(pageNumber);
+function restart() {
+  selectedService = '';
+  selectedDate = '';
+  selectedTime = '';
+  document.getElementById('serviceSelect').selectedIndex = 0;
+  goToStep(1);
 }
 
 async function loadServices() {
   const select = document.getElementById('serviceSelect');
+  select.innerHTML = '<option>Caricamento...</option>';
+
   try {
     const res = await fetch(`${backendUrl}/events`);
     const services = await res.json();
 
-    select.innerHTML = '<option value="">Seleziona...</option>';
+    select.innerHTML = '<option value="">Seleziona servizio...</option>';
     services.forEach(event => {
-      const opt = document.createElement('option');
-      opt.value = event.name;
-      opt.text = `${event.name} (${event.type === 'call' ? 'Call' : 'In sede'})`;
-      select.appendChild(opt);
+      const option = document.createElement('option');
+      option.value = event.name;
+      option.textContent = `${event.name} (${event.type === 'call' ? 'Call' : 'In sede'})`;
+      select.appendChild(option);
     });
-  } catch (error) {
-    console.error('Errore caricamento servizi', error);
-    select.innerHTML = '<option value="">Errore</option>';
+
+    select.addEventListener('change', e => {
+      selectedService = e.target.value;
+    });
+  } catch (err) {
+    select.innerHTML = '<option value="">Errore caricamento</option>';
   }
 }
 
-function generateDays() {
-  const daysContainer = document.getElementById('calendarDays');
-  daysContainer.innerHTML = '';
+function generateCalendar() {
+  const container = document.getElementById('calendarContainer');
+  container.innerHTML = '';
 
   const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() + currentWeekOffset * 7);
-
-  const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() + i);
+  for (let i = 0; i < 14; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() + i);
+    const dateStr = date.toISOString().split('T')[0];
 
     const dayDiv = document.createElement('div');
-    dayDiv.className = 'day';
-    dayDiv.innerHTML = `<div>${daysOfWeek[i]}</div><div>${date.getDate()}</div>`;
-
-    const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-
-    dayDiv.onclick = () => {
-      selectedDate = dateString;
-      document.querySelectorAll('.day').forEach(el => el.classList.remove('selected'));
+    dayDiv.className = 'calendar-day';
+    dayDiv.innerHTML = `<strong>${date.getDate()}</strong><br>${date.toLocaleDateString('it-IT', { weekday: 'short' })}`;
+    dayDiv.addEventListener('click', () => {
+      selectedDate = dateStr;
+      document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
       dayDiv.classList.add('selected');
-      generateSlots();
-    };
+      loadTimeSlots();
+    });
 
-    daysContainer.appendChild(dayDiv);
+    // Disponibilità fittizia
+    dayDiv.classList.add(i % 2 === 0 ? 'available' : '');
+
+    container.appendChild(dayDiv);
   }
 }
 
-async function generateSlots() {
-  const slotsContainer = document.getElementById('slotsList');
-  slotsContainer.innerHTML = '';
-
-  const times = ['09:00', '09:30', '10:00', '10:30', '11:00', '14:00', '14:30', '15:00'];
-
-  for (let time of times) {
-    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}&time=${time}`);
-    const data = await res.json();
-
-    const slotDiv = document.createElement('div');
-    slotDiv.className = 'slot-item';
-
-    if (!data.availableCollaborators || data.availableCollaborators.length === 0) {
-      slotDiv.classList.add('disabled');
-      slotDiv.textContent = `${time} - Non disponibile`;
-    } else {
-      slotDiv.textContent = `${time}`;
-      slotDiv.onclick = () => {
-        selectedTime = time;
-        document.querySelectorAll('.slot-item').forEach(el => el.classList.remove('selected'));
-        slotDiv.classList.add('selected');
-        updateAvailableCollaborators();
-      };
-    }
-
-    slotsContainer.appendChild(slotDiv);
-  }
-}
-
-async function updateAvailableCollaborators() {
-  const collabSelect = document.getElementById('collaboratorSelect');
-  collabSelect.innerHTML = '<option>Caricamento...</option>';
-
-  if (!selectedDate || !selectedTime) return;
+async function loadTimeSlots() {
+  const container = document.getElementById('timeSlotsContainer');
+  container.innerHTML = '<p>Caricamento orari...</p>';
 
   try {
-    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}&time=${selectedTime}`);
+    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}&time=09:00`);
     const data = await res.json();
 
-    if (!data.availableCollaborators || data.availableCollaborators.length === 0) {
-      collabSelect.innerHTML = '<option>Nessun collaboratore disponibile</option>';
-    } else {
-      collabSelect.innerHTML = '<option>Seleziona...</option>';
-      data.availableCollaborators.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        opt.text = name;
-        collabSelect.appendChild(opt);
+    container.innerHTML = '';
+    const slots = ['09:00', '09:30', '10:00', '10:30', '11:00'];
+
+    slots.forEach(slot => {
+      const div = document.createElement('div');
+      div.className = 'time-slot';
+      div.textContent = slot;
+
+      div.addEventListener('click', () => {
+        selectedTime = slot;
+        document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
+        div.classList.add('selected');
       });
-    }
+
+      container.appendChild(div);
+    });
   } catch (err) {
-    console.error('Errore collaboratori', err);
-    collabSelect.innerHTML = '<option>Errore caricamento</option>';
+    container.innerHTML = '<p>Errore caricamento orari.</p>';
   }
 }
 
-async function sendBooking() {
+async function confirmBooking() {
   const name = document.getElementById('nameInput').value;
   const email = document.getElementById('emailInput').value;
-  const reason = document.getElementById('reasonInput').value;
+  const notes = document.getElementById('notesInput').value;
 
-  if (!name || !email || !reason) {
+  if (!name || !email || !selectedDate || !selectedTime) {
     alert('Completa tutti i campi!');
     return;
   }
 
   const booking = {
-    servizio: document.getElementById('serviceSelect').value,
+    servizio: selectedService,
     giorno: selectedDate,
     ora: selectedTime,
-    collaboratore: document.getElementById('collaboratorSelect').value,
     nome: name,
     email: email,
-    motivo: reason
+    motivo: notes
   };
 
   try {
@@ -166,26 +130,12 @@ async function sendBooking() {
     });
 
     if (res.ok) {
-      showPage(4);
+      goToStep(4);
     } else {
-      alert('Errore nella prenotazione');
+      alert('Errore prenotazione');
     }
-
   } catch (err) {
-    console.error('Errore invio prenotazione', err);
+    console.error(err);
+    alert('Errore connessione');
   }
 }
-
-function nextWeek() {
-  currentWeekOffset++;
-  generateDays();
-}
-
-function prevWeek() {
-  currentWeekOffset--;
-  generateDays();
-}
-
-// Init
-loadServices();
-generateDays();
