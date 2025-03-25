@@ -20,18 +20,17 @@ function nextMonth() {
   generateCalendar();
 }
 
-function generateCalendar() {
+async function generateCalendar() {
   const container = document.getElementById('calendarContainer');
   const label = document.getElementById('monthYearLabel');
   container.innerHTML = '';
 
   const today = new Date();
   const currentDate = new Date(today.getFullYear(), today.getMonth() + currentMonthOffset, 1);
-
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+
   label.innerText = `${currentDate.toLocaleString('it-IT', { month: 'long' })} ${year}`;
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -39,17 +38,40 @@ function generateCalendar() {
     const dateStr = date.toISOString().split('T')[0];
 
     const div = document.createElement('div');
-    div.className = 'calendar-day available';
+    div.className = 'calendar-day loading';
     div.innerHTML = `<strong>${day}</strong><br>${date.toLocaleDateString('it-IT', { weekday: 'short' })}`;
 
-    div.addEventListener('click', () => {
-      selectedDate = dateStr;
-      document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-      div.classList.add('selected');
-      loadTimeSlots(); // aggiornato
-    });
-
     container.appendChild(div);
+
+    // Verifica disponibilità per ogni giorno
+    try {
+      const res = await fetch(`${backendUrl}/availability/all?date=${dateStr}`);
+      const data = await res.json();
+
+      const hasAvailableSlots = Object.keys(data).length > 0;
+
+      div.classList.remove('loading');
+
+      if (hasAvailableSlots) {
+        div.classList.add('available');
+        div.addEventListener('click', () => {
+          selectedDate = dateStr;
+          document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
+          div.classList.add('selected');
+          loadTimeSlots();
+        });
+      } else {
+        div.classList.add('unavailable');
+        div.style.opacity = 0.4;
+        div.style.pointerEvents = 'none';
+      }
+
+    } catch (error) {
+      console.error(`Errore nel controllo disponibilità per ${dateStr}:`, error);
+      div.classList.add('unavailable');
+      div.style.opacity = 0.3;
+      div.style.pointerEvents = 'none';
+    }
   }
 }
 
