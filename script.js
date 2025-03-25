@@ -32,7 +32,6 @@ function generateCalendar() {
   const month = currentDate.getMonth();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-
   label.innerText = `${currentDate.toLocaleString('it-IT', { month: 'long' })} ${year}`;
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -47,46 +46,50 @@ function generateCalendar() {
       selectedDate = dateStr;
       document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
       div.classList.add('selected');
-      loadTimeSlots();
+      loadTimeSlots(); // aggiornato
     });
 
     container.appendChild(div);
   }
 }
 
-async function generateSlots() {
+async function loadTimeSlots() {
   const slotsList = document.getElementById('slots');
   slotsList.innerHTML = '<p>Caricamento orari disponibili...</p>';
 
   try {
-    const res = await fetch(`${backendUrl}/availability?date=${selectedDate}`);
+    const res = await fetch(`${backendUrl}/availability/all?date=${selectedDate}`);
     const data = await res.json();
 
     slotsList.innerHTML = '';
 
-    if (!data.availableCollaborators.length) {
-      slotsList.innerHTML = '<p>Nessun collaboratore disponibile in questa data</p>';
+    const availableSlots = Object.keys(data); // formato: { '09:00': [...], '10:00': [...] }
+
+    if (availableSlots.length === 0) {
+      slotsList.innerHTML = '<p>Nessun orario disponibile</p>';
       return;
     }
 
-    data.slots.forEach(slot => {
+    availableSlots.forEach(slot => {
       const div = document.createElement('div');
       div.className = 'slot';
       div.textContent = slot;
 
       div.addEventListener('click', () => {
-        selectedSlot = slot;
+        selectedTime = slot;
         document.querySelectorAll('.slot').forEach(el => el.classList.remove('selected'));
         div.classList.add('selected');
 
-        loadCollaborators(data.availableCollaborators);
+        const collaborators = data[slot]; // array di nomi
+        loadCollaborators(collaborators);
       });
 
       slotsList.appendChild(div);
     });
+
   } catch (error) {
     console.error('Errore caricamento disponibilità:', error);
-    slotsList.innerHTML = '<p>Errore caricamento orari</p>';
+    slotsList.innerHTML = '<p>Errore nel caricamento</p>';
   }
 }
 
@@ -100,21 +103,4 @@ function loadCollaborators(availableNames) {
     option.textContent = name;
     collaboratorSelect.appendChild(option);
   });
-}
-
-function updateCollaborators(collaborators = []) {
-  const collaboratorSelect = document.getElementById('collaboratorSelect');
-  collaboratorSelect.innerHTML = '';
-
-  if (collaborators.length === 0) {
-    collaboratorSelect.innerHTML = '<option value="">Nessun collaboratore disponibile</option>';
-  } else {
-    collaboratorSelect.innerHTML = '<option value="">Seleziona collaboratore...</option>';
-    collaborators.forEach(c => {
-      const option = document.createElement('option');
-      option.value = c.name;
-      option.text = c.name;
-      collaboratorSelect.appendChild(option);
-    });
-  }
 }
